@@ -6,6 +6,8 @@ Part of the [eFLIPS/simBA](https://github.com/stars/ludgerheide/lists/ebus2030) 
 
 ---
 
+**[Link to the book](https://mpm-tu-berlin.github.io/eflips-book/)**
+
 This repository contains for how the different parts of the "eflips" Software stack fit together. It is aimed at developers, however it should also be useful for users wishing to understand how the software works.
 
 The book is built with [mdBook](https://github.com/rust-lang/mdBook).
