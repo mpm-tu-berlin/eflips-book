@@ -1,0 +1,6 @@
+[book]
+authors = ["Ludger Heide"]
+language = "en"
+multilingual = false
+src = "src"
+title = "eFLIPS Documentation"
