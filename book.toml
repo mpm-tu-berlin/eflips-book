@@ -4,3 +4,7 @@ language = "en"
 multilingual = false
 src = "src"
 title = "eFLIPS Documentation"
+
+[output.html]
+git-repository-url = "https://github.com/mpm-tu-berlin/eflips-book"
+git-repository-icon = "fa-github"

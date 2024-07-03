@@ -12,9 +12,13 @@ This repository contains for how the different parts of the "eflips" Software st
 
 The book is built with [mdBook](https://github.com/rust-lang/mdBook).
 
+Additionally, it contains the Python scripts referenced in the book.
+
 ## License
 
-This project is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0) license - see the [LICENSE](LICENSE.txt) file for details.
+The code is licensed under the AGPLv3 license - see the [LICENSE](LICENSE-code.md) file for details.
+
+The documentation is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0) license - see the [LICENSE](LICENSE-book.txt) file for details.
 
 ## Funding Notice
 
