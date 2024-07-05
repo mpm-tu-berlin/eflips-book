@@ -46,3 +46,57 @@ This image shows the result of the `rotation_info()` visualization function in e
 
 An interactive version of this plot is available [here](media/rotation_info.html). At first, it will show all schedules, making it basically unreadable. By double-clicking on a bus line in the lower legend, only a specific bus lien can be selected.
 
+### Validating Rotations using `single_rotation_info()`
+
+The `single_rotation_info()`methods in `eflips.eval.prepare` and `eflips.eval.visualize` allow for plotting a graph of how the trips of a rotation are connected. An example script to visualize a single location looks like this:
+
+```python
+import os
+
+from dash import Dash
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
+from eflips.eval.input.prepare import single_rotation_info as prepare_single_rotation_info
+from eflips.eval.input.visualize import single_rotation_info as visualize_single_rotation_info
+
+if "DATABASE_URL" in os.environ:
+	DATABASE_URL = os.environ.get("DATABASE_URL")
+else:
+	raise ValueError(
+		"No database URL provided. Please provide one using the --database_url argument or the "
+		"DATABASE_URL environment variable."
+	)
+
+if __name__ == "__main__":
+	engine = create_engine(DATABASE_URL)
+	ROTAITON_ID = 14632
+
+	with Session(engine) as session:
+		df = prepare_single_rotation_info(ROTAITON_ID, session)
+		dash_part = visualize_single_rotation_info(df)
+		dash_app = Dash(__name__)
+		dash_app.layout = dash_part
+		dash_app.run_server(debug=True)
+```
+
+Here, some results are shown and explained
+
+![A valid rotation](media/rotation-valid.png)
+
+This is a valid rotation. It seems to be a bus traveling on two different bus nights over a night of service. In the beginning of the night, it travels between Kielingerstr. and U Walter-Schreiber-Platz, in the end of the night it travels between Walter-Schreiber-Platz and Nariyastr. The deadhead trips both go to the same depot. 
+
+![A valid rotation](media/rotation-valid-short.png)
+
+This image shows a valid, but questionable rotation. According to this plan, the bus drives out of the depot for only two trips. This rotation has a total of 52 minutes in revenue service, for a vehicle and driver usage time of 101 minutes. This is an extremely inefficient rotation and may indicate a problem with the data.
+
+![Multiple Rotations detected as one](media/rotation-invalid-multiple.png)
+
+Here, it seems multiple rotations were detected as a single rotation. There are many different bus lines involved, and the bus takes a deadhead trip to "Abstellfläche Mariendorf" in the middle of its rotation and stays there from 11PM to 8AM.  
+
+![Disconnected stations](media/rotation-invalid-short.png)
+
+Here, it seems that two stations that are identical have been imported as different stations. The bus travels to "S Lichtenrade", arrives there at 07:27 and then its next trip departs from "BPUNKT S Lichtenrade".
+
+
+
