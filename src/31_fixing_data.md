@@ -201,5 +201,3 @@ scenario.select_rotations(session, midnight, timedelta(days=1))
 ```
 
 Note that the total period of the schedule (interactively visualized [here](media/scenario_1_final_rotations.html)) is still greater than 24 hours, as some of the rotations that start shortly before midnight run until after midnight. Its *repetition period*, however is 24 hours.
-
-## Correctly assigning vehicle types
