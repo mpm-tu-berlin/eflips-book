@@ -7,9 +7,9 @@
 - [Importing, Viewing and Editing Schedules](./20_import.md)
 	- [Importing VDV Schedules](./21_vdv.md)
 	- [Importing BVGXML Schedules](./22_bvgxml.md)
-	- [Viewing Schedules](./24_viewing.md)
-	- [Editing Schedules](./25_editing.md)
-- [Assigning Schedules to Depots using `eflips-opt`](./30_eflips_opt.md)
+- [Simulating an electrified network](./30_simulating.md)
+	- [Fixing up the Schedule Data](./31_fixing_data.md)s
+	- [Assigning Schedules to Depots using `eflips-opt`](./32_eflips_opt.md)
 - [The Core Simulation](./40_sim_core.md)
 - [Evaluation and Visualization](./50_visualization.md)
 – [Optimizations](./60_optimizations.md)

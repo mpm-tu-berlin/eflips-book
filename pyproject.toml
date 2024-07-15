@@ -9,9 +9,14 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
-eflips-depot = "^3.2.5"
-eflips-ingest = "^1.2.3"
-eflips-eval = "^1.2.1"
+#eflips-depot = "^3.2.5" TODO
+eflips-ingest = "^1.2.4"
+eflips-model = "^4.0.0a1"
+eflips-eval = "^1.2.3"
+jupyter = "^1.0.0"
+matplotlib = "^3.9.1"
+seaborn = "^0.13.2"
+tqdm = "^4.66.4"
 
 
 [build-system]

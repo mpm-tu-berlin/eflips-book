@@ -4,11 +4,11 @@
 
 ---
 
-The following information is derived form the documentation of the `eflips-model` package, which is available at [Read the Docs](https://eflips-model.readthedocs.io/en/latest/autoapi/model/index.html) and also graphically documented in the [Big Chema PDF](https://github.com/mpm-tu-berlin/eflips-model/blob/45f26a59d138c04ea76c875a5c90168354653a7a/schema.pdf)
+The following information is derived form the documentation of the `eflips-model` package, which is available at [Read the Docs](https://eflips-model.readthedocs.io/en/latest/autoapi/model/index.html) and also graphically documented in the [Big Schema PDF](https://github.com/mpm-tu-berlin/eflips-model/blob/45f26a59d138c04ea76c875a5c90168354653a7a/schema.pdf)
 
 ---
 
-The data of a bus Schedule is composed of grographical and temporal information. For simulation, additional data about the vehicle types, cahrging stations and depot is required, which is not included in the schedule itself. See the [Simulation](50_sim_core) chapter for information on these data.
+The data of a bus Schedule is composed of grographical and temporal information. For simulation, additional data about the vehicle types, cahrging stations and depot is required, which is not included in the schedule itself. See the [Simulation](./50_sim_core.md) chapter for information on these data.
 
 
 ### Temporal Data
