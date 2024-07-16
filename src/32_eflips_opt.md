@@ -1,5 +1,11 @@
 # Assigning Schedules to Depots using `eflips-opt`
 
+---
+
+The code for this chapter is available [here](https://github.com/mpm-tu-berlin/eflips-book/blob/main/40_eflips_opt.py). Note that due to `eflips-opt` implementing an async loop, it cannot be called inside a Jupyter Notebook.
+
+---
+
 <div class="warning">
 
 While `eflips-opt` is AGPLv3-licensed free software, it requires interfacing with the following services:
@@ -17,7 +23,7 @@ It should be noted that "rotation reassignment", e.g. assigning rotations to new
 
 ## Visualizing the current state
 
-![Geographic view of the Berlin bus network by depot](media/geographic_trip_plot.png)
+![Geographic view of the Berlin bus network by depot](media/pre_opt_geographic_trip_plot.png)
 
 The figure above shows which depots currently serve which area in Berlin (it can be interactively explored [here](media/geographic_trip_plot.html). It is generated using `eflips.eval.prepate.geographic_trip_plot()` and `eflips.eval.visualize.grographic_trip_plot()`
 
