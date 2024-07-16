@@ -18,6 +18,7 @@ matplotlib = "^3.9.1"
 seaborn = "^0.13.2"
 tqdm = "^4.66.4"
 eflips-opt = {git = "git@github.com:mpm-tu-berlin/eflips-opt.git", rev = "bugfix/eflips-model-version"}
+kaleido = "0.2.1"
 
 
 [build-system]
