@@ -79,48 +79,48 @@ In out case, the new vehicle types are created
 ```python
 # Create three new vehicle types. One single, one double, and a long bus.
 single_decker = VehicleType(name="Ebusco 3.0 12", 
-							scenario_id=SCENARIO_ID,
-							name_short="SB", 
-							battery_capacity=500.0,
-							battery_capacity_reserve=0.0,
-							charging_curve=[[0, 1], [300, 300]],
-							opportunity_charging_capable=True,
-							minimum_charging_power=10,
-							length=12.0,
-							width=2.55,
-							height=3.19,
-							empty_mass=9950
-							)
+                            scenario_id=SCENARIO_ID,
+                            name_short="SB", 
+                            battery_capacity=500.0,
+                            battery_capacity_reserve=0.0,
+                            charging_curve=[[0, 300], [1, 300]],
+                            opportunity_charging_capable=True,
+                            minimum_charging_power=10,
+                            length=12.0,
+                            width=2.55,
+                            height=3.19,
+                            empty_mass=9950
+                            )
 session.add(single_decker)
 
 bendy_bus = VehicleType(name="Solaris Urbino 18",
-							scenario_id=SCENARIO_ID,
-							name_short="GN",
-							battery_capacity=800.0,
-							battery_capacity_reserve=0.0,
-							charging_curve=[[0, 1], [300, 300]],
-							opportunity_charging_capable=True,
-							minimum_charging_power=10,
-							length=18.0,
-							width=2.55,
-							height=3.19,
-							empty_mass=19000
-							)
+                            scenario_id=SCENARIO_ID,
+                            name_short="GN",
+                            battery_capacity=800.0,
+                            battery_capacity_reserve=0.0,
+                            charging_curve=[[0, 300], [1, 300]],
+                            opportunity_charging_capable=True,
+                            minimum_charging_power=10,
+                            length=18.0,
+                            width=2.55,
+                            height=3.19,
+                            empty_mass=19000
+                            )
 session.add(bendy_bus)
 
 double_decker = VehicleType(name="Alexander Dennis Enviro500EV",
-							scenario_id=SCENARIO_ID,
-							name_short="DD",
-							battery_capacity=472,
-							battery_capacity_reserve=0.0,
-							charging_curve=[[0, 1], [300, 300]],
-							opportunity_charging_capable=True,
-							minimum_charging_power=10,
-							length=12.0,
-							width=2.55,
-							height=4.3,
-							empty_mass=16000
-							)
+                            scenario_id=SCENARIO_ID,
+                            name_short="DD",
+                            battery_capacity=472,
+                            battery_capacity_reserve=0.0,
+                            charging_curve=[[0, 300], [1, 300]],
+                            opportunity_charging_capable=True,
+                            minimum_charging_power=10,
+                            length=12.0,
+                            width=2.55,
+                            height=4.3,
+                            empty_mass=16000
+                            )
 session.add(double_decker)  
 ```
 
