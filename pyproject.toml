@@ -8,7 +8,7 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.10, <3.11"
 eflips-depot = "^4.0.0"
 eflips-ingest = "^1.2.4"
 eflips-model = "^4.0.0a1"
@@ -19,6 +19,7 @@ seaborn = "^0.13.2"
 tqdm = "^4.66.4"
 eflips-opt = {git = "git@github.com:mpm-tu-berlin/eflips-opt.git", rev = "bugfix/eflips-model-version"}
 kaleido = "0.2.1"
+django-simba = { git = "git@github.com:rl-institut/django-simba.git", branch = "feature/djago-simba-as-package" }
 
 
 [build-system]

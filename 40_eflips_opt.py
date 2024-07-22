@@ -208,12 +208,8 @@ keys = list(pre_opt_counter.keys())
 pre_opt_values = [pre_opt_counter[key] for key in keys]
 post_opt_values = [post_opt_counter[key] for key in keys]
 
-ax.barh(
-    ind - width / 2, pre_opt_values, width, label="Before Optimization"
-)
-ax.barh(
-    ind + width / 2, post_opt_values, width, label="After Optimization"
-)
+ax.barh(ind - width / 2, pre_opt_values, width, label="Before Optimization")
+ax.barh(ind + width / 2, post_opt_values, width, label="After Optimization")
 ax.set_xlabel("Number of Rotations")
 ax.set_ylabel("Depot")
 ax.legend()

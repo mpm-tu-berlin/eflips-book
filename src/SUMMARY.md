@@ -10,6 +10,8 @@
 - [Simulating an electrified network](./30_simulating.md)
 	- [Fixing up the Schedule Data](./31_fixing_data.md)s
 	- [Assigning Schedules to Depots using `eflips-opt`](./32_eflips_opt.md)
+	- [Calculating Energy Consumption](./33_energy_consumption.md)
+	- [Creating a feasible network](./34_feasible_network.md)
 - [The Core Simulation](./40_sim_core.md)
 - [Evaluation and Visualization](./50_visualization.md)
 – [Optimizations](./60_optimizations.md)
