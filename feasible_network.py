@@ -324,22 +324,22 @@ def optimize(
             cached_scenarios[
                 (frozenset(electrified_stations), frozenset(split_rotations))
             ] = result
-            logger.info(
-                f"Currently step {step} with {len(electrified_stations)} electrified stations and {len(split_rotations)} split rotations. Result: {result}"
-            )
-            meta_result.append(
-                {
-                    "electrified_station_count": len(electrified_stations),
-                    "electrified_stations": electrified_stations,
-                    "split_rotation_count": len(split_rotations),
-                    "split_rotations": split_rotations,
-                    "result": result,
-                }
-            )
-            # Write to a file named after scenario ID and our PID
-            pid = os.getpid()
-            with open(f"meta_result_{original_scenario_id}_{pid}.json", "w") as f:
-                json.dump(meta_result, f)
+        logger.info(
+            f"Currently step {step} with {len(electrified_stations)} electrified stations and {len(split_rotations)} split rotations. Result: {result}"
+        )
+        meta_result.append(
+            {
+                "electrified_station_count": len(electrified_stations),
+                "electrified_stations": electrified_stations,
+                "split_rotation_count": len(split_rotations),
+                "split_rotations": split_rotations,
+                "result": result,
+            }
+        )
+        # Write to a file named after scenario ID and our PID
+        pid = os.getpid()
+        with open(f"meta_result_{original_scenario_id}_{pid}.json", "w") as f:
+            json.dump(meta_result, f)
 
 
 if __name__ == "__main__":
