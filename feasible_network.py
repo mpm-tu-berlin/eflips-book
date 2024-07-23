@@ -202,17 +202,18 @@ def random_step(
             session.query(Event)
             .filter(Event.scenario_id == scenario_id)
             .filter(Event.soc_end < 0)
-            .join(Trip)
-            .join(Rotation)
-            .filter(Rotation.id <= max_rotation_id)
             .filter(Event.event_type == EventType.DRIVING)
             .options(sqlalchemy.orm.joinedload(Event.trip).joinedload(Trip.route))
+            .options(sqlalchemy.orm.joinedload(Event.trip).joinedload(Trip.rotation))
             .all()
         )
         station_popularity = Counter()
 
         for event in low_soc_events:
-            station_popularity[event.trip.route.arrival_station_id] += 1
+            station_id = event.trip.route.arrival_station_id
+            rotation = event.trip.rotation
+            if station_id != rotation.trips[-1].route.arrival_station_id:
+                station_popularity[event.trip.route.arrival_station_id] += 1
 
         most_popular_station = station_popularity.most_common(1)[0][0]
 
@@ -221,6 +222,9 @@ def random_step(
         # Find asssociated with the lowest SoC event
         lowest_soc_event: Event = (
             session.query(Event)
+            .join(Trip)
+            .join(Rotation)
+            .filter(Rotation.id <= max_rotation_id)
             .filter(Event.soc_end < 0)
             .filter(Event.event_type == EventType.DRIVING)
             .filter(Event.scenario_id == scenario_id)
@@ -396,11 +400,16 @@ if __name__ == "__main__":
     engine = create_engine(args.database_url)
     session = Session(engine)
 
-    COUNT = multiprocessing.cpu_count()
-
-    random_bias_range = np.linspace(0.1, 0.9, COUNT)
-
-    shared_dict = multiprocessing.Manager().dict()
+    if True:
+        COUNT = multiprocessing.cpu_count()
+        PARALLEL = True
+        random_bias_range = np.linspace(0.1, 0.9, COUNT)
+        shared_dict = multiprocessing.Manager().dict()
+    else:
+        COUNT = 1
+        PARALLEL = False
+        random_bias_range = [1.0]
+        shared_dict = None
 
     # We need to use postgres to create a new database for each process
     original_database_name = args.database_url.split("/")[-1]
@@ -422,6 +431,9 @@ if __name__ == "__main__":
                 shared_dict,
             )
         )
-
-    with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
-        pool.starmap(optimize, pool_args)
+    if PARALLEL:
+        with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+            pool.starmap(optimize, pool_args)
+    else:
+        for arg in pool_args:
+            optimize(*arg)
