@@ -9,7 +9,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.10, <3.11"
-eflips-depot = "^4.0.0"
+eflips-depot = "^4.1.0"
 eflips-ingest = "^1.2.4"
 eflips-model = "^4.0.0a1"
 eflips-eval = "^1.3.0"
@@ -20,6 +20,7 @@ tqdm = "^4.66.4"
 eflips-opt = {git = "git@github.com:mpm-tu-berlin/eflips-opt.git", rev = "bugfix/eflips-model-version"}
 kaleido = "0.2.1"
 django-simba = { git = "git@github.com:rl-institut/django-simba.git", branch = "feature/djago-simba-as-package" }
+black = {extras = ["jupyter"], version = "^24.4.2"}
 
 
 [build-system]
