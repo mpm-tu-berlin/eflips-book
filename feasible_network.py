@@ -197,30 +197,39 @@ def random_step(
 
     # Choose whether to electrify a station or split a rotation
     if random() < random_bias:
-        # Find the most popular terminus stations where SoC < 0
-        low_soc_events = (
-            session.query(Event)
-            .filter(Event.scenario_id == scenario_id)
+        # We need to identify which station to electrify
+        # First, we identify all the rotations containing a SoC < 0 event
+        rotations_with_low_soc = (
+            session.query(Rotation)
+            .join(Trip)
+            .join(Event)
             .filter(Event.soc_end < 0)
             .filter(Event.event_type == EventType.DRIVING)
-            .options(sqlalchemy.orm.joinedload(Event.trip).joinedload(Trip.route))
-            .options(sqlalchemy.orm.joinedload(Event.trip).joinedload(Trip.rotation))
+            .filter(Event.scenario_id == scenario_id)
+            .options(sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route))
             .all()
         )
-        station_popularity = Counter()
 
-        for event in low_soc_events:
-            station_id = event.trip.route.arrival_station_id
-            rotation = event.trip.rotation
-            if station_id != rotation.trips[-1].route.arrival_station_id:
-                station_popularity[event.trip.route.arrival_station_id] += 1
+        # For these rotations, we find all the arrival statiosn but the last one. The last one is the depot.
+        # We sum up the time spent at a break at each of these stations.
+        total_break_time_by_station = Counter()
+        for rotation in rotations_with_low_soc:
+            for i in range(len(rotation.trips) - 1):
+                trip = rotation.trips[i]
+                total_break_time_by_station[trip.route.arrival_station_id] += int((
+                    rotation.trips[i + 1].departure_time - trip.arrival_time
+                ).total_seconds())
 
-        most_popular_station = station_popularity.most_common(1)[0][0]
+        # If all stations have a score iof 0, we terminate the optimization
+        if all(v == 0 for v in total_break_time_by_station.values()):
+            return None, None
+
+        most_popular_station = total_break_time_by_station.most_common(1)[0][0]
 
         return most_popular_station, None
     else:
         # Find asssociated with the lowest SoC event
-        lowest_soc_event: Event = (
+        lowest_soc_event_q: Event = (
             session.query(Event)
             .join(Trip)
             .join(Rotation)
@@ -229,8 +238,11 @@ def random_step(
             .filter(Event.event_type == EventType.DRIVING)
             .filter(Event.scenario_id == scenario_id)
             .order_by(Event.soc_end)
-            .first()
         )
+        if lowest_soc_event_q.count() == 0:
+            return None, None
+        else:
+            lowest_soc_event = lowest_soc_event_q.first()
         rotation_id = lowest_soc_event.trip.rotation_id
         return None, rotation_id
 
@@ -304,6 +316,9 @@ def optimize(
             session=session,
             max_rotation_id=session.query(func.max(Rotation.id)).scalar(),
         )
+        if new_electrified_station is None and new_split_rotation is None:
+            logger.info("No more feasible steps.")
+            break
         if new_electrified_station is not None:
             electrified_stations.append(new_electrified_station)
         if new_split_rotation is not None:
