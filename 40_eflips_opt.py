@@ -222,5 +222,5 @@ plt.tight_layout()
 plt.savefig(os.path.join("src", "media", "depot_rotations_opt.svg"))
 plt.show()
 
-session.rollback()
+session.commit()
 session.close()
