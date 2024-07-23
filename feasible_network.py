@@ -263,7 +263,7 @@ def optimize(
     session: sqlalchemy.orm.session.Session | None,
     database_url: str,
     random_bias=0.5,
-    shared_dict: Dict[Tuple[FrozenSet[int], FrozenSet[int]], int] | None = None
+    shared_dict: Dict[Tuple[FrozenSet[int], FrozenSet[int]], int] | None = None,
 ) -> None:
     """
     Use a directed random walk to find a feasible scenario. The optimization is done by iteratively modifying the
@@ -325,7 +325,7 @@ def optimize(
                 (frozenset(electrified_stations), frozenset(split_rotations))
             ] = result
             logger.info(
-                f"Currently generation {i} step {step} with {len(electrified_stations)} electrified stations and {len(split_rotations)} split rotations. Result: {result}"
+                f"Currently step {step} with {len(electrified_stations)} electrified stations and {len(split_rotations)} split rotations. Result: {result}"
             )
             meta_result.append(
                 {
@@ -338,7 +338,7 @@ def optimize(
             )
             # Write to a file named after scenario ID and our PID
             pid = os.getpid()
-            with open(f"meta_result_{original_scenario_id}_{pid}.csv", "w") as f:
+            with open(f"meta_result_{original_scenario_id}_{pid}.json", "w") as f:
                 json.dump(meta_result, f)
 
 
@@ -414,7 +414,13 @@ if __name__ == "__main__":
             original_database_name, database_name
         )
         pool_args.append(
-            (args.scenario_id, None, new_database_url, random_bias_range[i], shared_dict)
+            (
+                args.scenario_id,
+                None,
+                new_database_url,
+                random_bias_range[i],
+                shared_dict,
+            )
         )
 
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
