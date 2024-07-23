@@ -308,7 +308,6 @@ def optimize(
                 logger.debug("Simulating new scenario.")
 
                 session.rollback()
-                session.expire_all()
                 for station_id in electrified_stations:
                     electrify_station(station_id, session=session)
                 for rotation_id in split_rotations:
