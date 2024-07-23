@@ -263,6 +263,7 @@ def optimize(
     session: sqlalchemy.orm.session.Session | None,
     database_url: str,
     random_bias=0.5,
+    shared_dict: Dict[Tuple[FrozenSet[int], FrozenSet[int]], int] | None = None
 ) -> None:
     """
     Use a directed random walk to find a feasible scenario. The optimization is done by iteratively modifying the
@@ -282,7 +283,10 @@ def optimize(
 
     electrified_stations = []
     split_rotations = []
-    cached_scenarios: Dict[Tuple[FrozenSet[int], FrozenSet[int]], int] = {}
+    if shared_dict is not None:
+        cached_scenarios = shared_dict
+    else:
+        cached_scenarios: Dict[Tuple[FrozenSet[int], FrozenSet[int]], int] = {}
     result = simulate(scenario_id=original_scenario_id, session=session)
     step = 0
 
@@ -396,6 +400,8 @@ if __name__ == "__main__":
 
     random_bias_range = np.linspace(0.1, 0.9, COUNT)
 
+    shared_dict = multiprocessing.Manager().dict()
+
     # We need to use postgres to create a new database for each process
     original_database_name = args.database_url.split("/")[-1]
     pool_args = []
@@ -408,7 +414,7 @@ if __name__ == "__main__":
             original_database_name, database_name
         )
         pool_args.append(
-            (args.scenario_id, None, new_database_url, random_bias_range[i])
+            (args.scenario_id, None, new_database_url, random_bias_range[i], shared_dict)
         )
 
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
