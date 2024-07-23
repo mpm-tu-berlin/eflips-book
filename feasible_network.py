@@ -6,6 +6,7 @@ no bus arrives at the depot below 0% SOC. This is done by iteratively modifying 
 and splitting rotations.
 """
 import json
+import multiprocessing
 from collections import Counter
 import argparse
 import logging
@@ -34,6 +35,7 @@ from eflips.depot.api import (
     apply_even_smart_charging,
 )
 
+warnings.simplefilter("ignore", category=ConsistencyWarning)
 
 def list_scenarios(database_url: str, session: sqlalchemy.orm.session.Session) -> None:
     scenarios = session.query(Scenario).all()
@@ -201,6 +203,8 @@ def random_step(
             session.query(Event)
             .filter(Event.scenario_id == scenario_id)
             .filter(Event.soc_end < 0)
+            .join(Trip)
+            .join(Rotation)
             .filter(Rotation.id <= max_rotation_id)
             .filter(Event.event_type == EventType.DRIVING)
             .options(sqlalchemy.orm.joinedload(Event.trip).joinedload(Trip.route))
@@ -256,7 +260,7 @@ def clone_senario(
 
 
 def optimize(
-    original_scenario_id: int, session: sqlalchemy.orm.session.Session, random_bias=0.5
+    original_scenario_id: int, session: sqlalchemy.orm.session.Session | None, random_bias=0.5
 ) -> None:
     """
     Use a directed random walk to find a feasible scenario. The optimization is done by iteratively modifying the
@@ -267,71 +271,69 @@ def optimize(
     :return: Nothing. The database is modified in place.
     """
     logger = logging.getLogger(__name__)
-    random_bias = 0.0  # TODO
+    if session is None:
+        logger.info("Creating new session.")
+        engine = create_engine(os.environ["DATABASE_URL"])
+        session = Session(engine)
 
     meta_result: List[Dict[str, int]] = []
 
-    for i in range(100):
-        electrified_stations = []
-        split_rotations = []
-        cached_scenarios: Dict[Tuple[FrozenSet[int], FrozenSet[int]], int] = {}
-        result = simulate(scenario_id=original_scenario_id, session=session)
-        step = 0
+    electrified_stations = []
+    split_rotations = []
+    cached_scenarios: Dict[Tuple[FrozenSet[int], FrozenSet[int]], int] = {}
+    result = simulate(scenario_id=original_scenario_id, session=session)
+    step = 0
 
-        while result > 0:
-            step += 1
-            new_electrified_station, new_split_rotation = random_step(
-                scenario_id=original_scenario_id,
-                electrified_stations=electrified_stations,
-                split_rotations=split_rotations,
-                random_bias=random_bias,
-                session=session,
-                max_rotation_id=session.query(func.max(Rotation.id)).scalar(),
+    while result > 0:
+        step += 1
+        new_electrified_station, new_split_rotation = random_step(
+            scenario_id=original_scenario_id,
+            electrified_stations=electrified_stations,
+            split_rotations=split_rotations,
+            random_bias=random_bias,
+            session=session,
+            max_rotation_id=session.query(func.max(Rotation.id)).scalar(),
+        )
+        if new_electrified_station is not None:
+            electrified_stations.append(new_electrified_station)
+        if new_split_rotation is not None:
+            split_rotations.append(new_split_rotation)
+        if (
+            frozenset(electrified_stations),
+            frozenset(split_rotations),
+        ) in cached_scenarios:
+            logger.debug("Scenario already exists.")
+            result = cached_scenarios[
+                (frozenset(electrified_stations), frozenset(split_rotations))
+            ]
+        else:
+            logger.debug("Simulating new scenario.")
+
+            session.rollback()
+            for station_id in electrified_stations:
+                electrify_station(station_id, session=session)
+            for rotation_id in split_rotations:
+                split_rotation(rotation_id, session=session)
+            result = simulate(original_scenario_id, session=session)
+            cached_scenarios[
+                (frozenset(electrified_stations), frozenset(split_rotations))
+            ] = result
+            logger.info(
+                f"Currently generation {i} step {step} with {len(electrified_stations)} electrified stations and {len(split_rotations)} split rotations. Result: {result}"
             )
-            if new_electrified_station is not None:
-                electrified_stations.append(new_electrified_station)
-            if new_split_rotation is not None:
-                split_rotations.append(new_split_rotation)
-            if (
-                frozenset(electrified_stations),
-                frozenset(split_rotations),
-            ) in cached_scenarios:
-                logger.debug("Scenario already exists.")
-                result = cached_scenarios[
-                    (frozenset(electrified_stations), frozenset(split_rotations))
-                ]
-            else:
-                logger.debug("Simulating new scenario.")
-
-                session.rollback()
-                for station_id in electrified_stations:
-                    electrify_station(station_id, session=session)
-                for rotation_id in split_rotations:
-                    split_rotation(rotation_id, session=session)
-                result = simulate(original_scenario_id, session=session)
-                cached_scenarios[
-                    (frozenset(electrified_stations), frozenset(split_rotations))
-                ] = result
-                logger.info(
-                    f"Currently generation {i} step {step} with {len(electrified_stations)} electrified stations and {len(split_rotations)} split rotations. Result: {result}"
-                )
-                meta_result.append(
-                    {
-                        "electrified_station_count": len(electrified_stations),
-                        "electrified_stations": electrified_stations,
-                        "split_rotation_count": len(split_rotations),
-                        "split_rotations": split_rotations,
-                        "result": result,
-                    }
-                )
-                # Write to a file named after scenario ID and our PID
-                pid = os.getpid()
-                with open(f"meta_result_{original_scenario_id}_{pid}.csv", "w") as f:
-                    json.dump(meta_result, f)
-
-        df = pd.DataFrame(meta_result)
-        df.to_csv("meta_result.csv")
-        df.to_pickle("meta_result.pkl")
+            meta_result.append(
+                {
+                    "electrified_station_count": len(electrified_stations),
+                    "electrified_stations": electrified_stations,
+                    "split_rotation_count": len(split_rotations),
+                    "split_rotations": split_rotations,
+                    "result": result,
+                }
+            )
+            # Write to a file named after scenario ID and our PID
+            pid = os.getpid()
+            with open(f"meta_result_{original_scenario_id}_{pid}.csv", "w") as f:
+                json.dump(meta_result, f)
 
 
 if __name__ == "__main__":
@@ -387,4 +389,9 @@ if __name__ == "__main__":
 
     engine = create_engine(args.database_url)
     session = Session(engine)
-    optimize(args.scenario_id, session)
+
+    random_bias_range = np.linspace(0.1, 0.9, multiprocessing.cpu_count())
+
+    pools_args = [(args.scenario_id, None, random_bias) for random_bias in random_bias_range]
+    with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+        pool.starmap(optimize, pools_args)
