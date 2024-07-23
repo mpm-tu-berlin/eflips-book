@@ -1224,7 +1224,7 @@ tqdm = "^4.66.1"
 type = "git"
 url = "git@github.com:rl-institut/django-simba.git"
 reference = "feature/djago-simba-as-package"
-resolved_reference = "b924f5af4ef061e20426f18ca9ca53cd9f684520"
+resolved_reference = "1e315ffff71b9a97d88e2812f18a94e610319ede"
 
 [[package]]
 name = "djangorestframework"

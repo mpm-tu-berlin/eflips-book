@@ -91,7 +91,7 @@ single_decker = VehicleType(
     width=2.55,
     height=3.19,
     empty_mass=9950,
-    consumption=2, # kWh/km TODO: Add proper consumption LUT
+    consumption=2.2, # kWh/km TODO: Add proper consumption LUT
 )
 session.add(single_decker)
 
@@ -108,7 +108,7 @@ bendy_bus = VehicleType(
     width=2.55,
     height=3.19,
     empty_mass=19000,
-    consumption=2, # kWh/km TODO: Add proper consumption LUT
+    consumption=2.2, # kWh/km TODO: Add proper consumption LUT
 )
 session.add(bendy_bus)
 
@@ -125,7 +125,7 @@ double_decker = VehicleType(
     width=2.55,
     height=4.3,
     empty_mass=16000,
-    consumption=2, # kWh/km TODO: Add proper consumption LUT
+    consumption=2.2, # kWh/km TODO: Add proper consumption LUT
 )
 session.add(double_decker)
 ```
