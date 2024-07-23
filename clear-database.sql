@@ -16,4 +16,7 @@ DELETE FROM "Area" WHERE scenario_id != 1;
 DELETE FROM "AssocRouteStation" WHERE scenario_id != 1;
 DELETE FROM "AssocPlanProcess" WHERE scenario_id != 1;
 DELETE FROM "Depot" WHERE scenario_id != 1;
-
+DELETE FROM "Plan" WHERE scenario_id != 1;
+DELETE FROM "Process" WHERE scenario_id != 1;
+DELETE FROM "VehicleType" WHERE scenario_id != 1;
+DELETE FROM "Scenario" WHERE id != 1;
