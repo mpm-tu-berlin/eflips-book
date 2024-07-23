@@ -37,6 +37,7 @@ from eflips.depot.api import (
 
 warnings.simplefilter("ignore", category=ConsistencyWarning)
 
+
 def list_scenarios(database_url: str, session: sqlalchemy.orm.session.Session) -> None:
     scenarios = session.query(Scenario).all()
     for scenario in scenarios:
@@ -103,8 +104,7 @@ def split_rotation(
 
     deadhead_after_start = first_trips[-1].arrival_time + deadhead_break
     deadhead_after_duration = (
-        saved_trips_sequence[-1].arrival_time
-        - saved_trips_sequence[-1].departure_time
+        saved_trips_sequence[-1].arrival_time - saved_trips_sequence[-1].departure_time
     )
     deadhead_after = Trip(
         scenario_id=rotation.scenario_id,
@@ -129,8 +129,7 @@ def split_rotation(
 
     deadhead_before_end = second_trips[0].departure_time - deadhead_break
     deadhead_before_duration = (
-        saved_trips_sequence[0].arrival_time
-        - saved_trips_sequence[0].departure_time
+        saved_trips_sequence[0].arrival_time - saved_trips_sequence[0].departure_time
     )
     deadhead_before = Trip(
         scenario_id=rotation.scenario_id,
@@ -260,7 +259,10 @@ def clone_senario(
 
 
 def optimize(
-    original_scenario_id: int, session: sqlalchemy.orm.session.Session | None, random_bias=0.5
+    original_scenario_id: int,
+    session: sqlalchemy.orm.session.Session | None,
+    database_url: str,
+    random_bias=0.5,
 ) -> None:
     """
     Use a directed random walk to find a feasible scenario. The optimization is done by iteratively modifying the
@@ -273,7 +275,7 @@ def optimize(
     logger = logging.getLogger(__name__)
     if session is None:
         logger.info("Creating new session.")
-        engine = create_engine(os.environ["DATABASE_URL"])
+        engine = create_engine(database_url)
         session = Session(engine)
 
     meta_result: List[Dict[str, int]] = []
@@ -390,8 +392,24 @@ if __name__ == "__main__":
     engine = create_engine(args.database_url)
     session = Session(engine)
 
-    random_bias_range = np.linspace(0.1, 0.9, multiprocessing.cpu_count())
+    COUNT = multiprocessing.cpu_count()
 
-    pools_args = [(args.scenario_id, None, random_bias) for random_bias in random_bias_range]
+    random_bias_range = np.linspace(0.1, 0.9, COUNT)
+
+    # We need to use postgres to create a new database for each process
+    original_database_name = args.database_url.split("/")[-1]
+    pool_args = []
+    for i in range(COUNT):
+        database_name = f"feasible_network_{i}"
+        # Delete database if it exists
+        os.system(f"dropdb {database_name}")
+        os.system(f"createdb {database_name} -T {original_database_name}")
+        new_database_url = args.database_url.replace(
+            original_database_name, database_name
+        )
+        pool_args.append(
+            (args.scenario_id, None, new_database_url, random_bias_range[i])
+        )
+
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
-        pool.starmap(optimize, pools_args)
+        pool.starmap(optimize, pool_args)
