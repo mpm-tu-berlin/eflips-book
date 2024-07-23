@@ -64,7 +64,6 @@ def electrify_station(
     station.power_total = station.amount_charging_places * station.power_per_charger
     station.charge_type = ChargeType.OPPORTUNITY
     station.voltage_level = VoltageLevel.MV
-    session.flush()
 
 
 def split_rotation(
@@ -95,63 +94,60 @@ def split_rotation(
     # The deadhead trips are time-shifted copies of the first/last trip of the original rotation
     first_trips = rotation.trips[:middle_trip_index]
 
-    with session.no_autoflush:
-        # Delete the original rotation
-        saved_trips_sequence = rotation.trips.copy()
-        rotation.trips = []
-        session.delete(rotation)
+    # Delete the original rotation
+    saved_trips_sequence = rotation.trips.copy()
+    rotation.trips = []
+    session.delete(rotation)
 
-        deadhead_after_start = first_trips[-1].arrival_time + deadhead_break
-        deadhead_after_duration = (
-            saved_trips_sequence[-1].arrival_time
-            - saved_trips_sequence[-1].departure_time
-        )
-        deadhead_after = Trip(
-            scenario_id=rotation.scenario_id,
-            route=saved_trips_sequence[-1].route,
-            departure_time=deadhead_after_start,
-            arrival_time=deadhead_after_start + deadhead_after_duration,
-            trip_type=TripType.EMPTY,
-        )
-        first_trips.append(deadhead_after)
+    deadhead_after_start = first_trips[-1].arrival_time + deadhead_break
+    deadhead_after_duration = (
+        saved_trips_sequence[-1].arrival_time
+        - saved_trips_sequence[-1].departure_time
+    )
+    deadhead_after = Trip(
+        scenario_id=rotation.scenario_id,
+        route=saved_trips_sequence[-1].route,
+        departure_time=deadhead_after_start,
+        arrival_time=deadhead_after_start + deadhead_after_duration,
+        trip_type=TripType.EMPTY,
+    )
+    first_trips.append(deadhead_after)
 
-        rotation_a = Rotation(
-            scenario_id=rotation.scenario_id,
-            name=rotation.name + " (A)",
-            vehicle_type_id=rotation.vehicle_type_id,
-            allow_opportunity_charging=rotation.allow_opportunity_charging,
-        )
-        rotation_a.trips = first_trips
-        session.add(deadhead_after)
-        session.add(rotation_a)
+    rotation_a = Rotation(
+        scenario_id=rotation.scenario_id,
+        name=rotation.name + " (A)",
+        vehicle_type_id=rotation.vehicle_type_id,
+        allow_opportunity_charging=rotation.allow_opportunity_charging,
+    )
+    rotation_a.trips = first_trips
+    session.add(deadhead_after)
+    session.add(rotation_a)
 
-        second_trips = saved_trips_sequence[middle_trip_index:]
+    second_trips = saved_trips_sequence[middle_trip_index:]
 
-        deadhead_before_end = second_trips[0].departure_time - deadhead_break
-        deadhead_before_duration = (
-            saved_trips_sequence[0].arrival_time
-            - saved_trips_sequence[0].departure_time
-        )
-        deadhead_before = Trip(
-            scenario_id=rotation.scenario_id,
-            route=saved_trips_sequence[0].route,
-            departure_time=deadhead_before_end - deadhead_before_duration,
-            arrival_time=deadhead_before_end,
-            trip_type=TripType.EMPTY,
-        )
-        second_trips.insert(0, deadhead_before)
+    deadhead_before_end = second_trips[0].departure_time - deadhead_break
+    deadhead_before_duration = (
+        saved_trips_sequence[0].arrival_time
+        - saved_trips_sequence[0].departure_time
+    )
+    deadhead_before = Trip(
+        scenario_id=rotation.scenario_id,
+        route=saved_trips_sequence[0].route,
+        departure_time=deadhead_before_end - deadhead_before_duration,
+        arrival_time=deadhead_before_end,
+        trip_type=TripType.EMPTY,
+    )
+    second_trips.insert(0, deadhead_before)
 
-        rotation_b = Rotation(
-            scenario_id=rotation.scenario_id,
-            name=rotation.name + " (B)",
-            vehicle_type_id=rotation.vehicle_type_id,
-            allow_opportunity_charging=rotation.allow_opportunity_charging,
-        )
-        rotation_b.trips = second_trips
-        session.add(deadhead_before)
-        session.add(rotation_b)
-
-    session.flush()
+    rotation_b = Rotation(
+        scenario_id=rotation.scenario_id,
+        name=rotation.name + " (B)",
+        vehicle_type_id=rotation.vehicle_type_id,
+        allow_opportunity_charging=rotation.allow_opportunity_charging,
+    )
+    rotation_b.trips = second_trips
+    session.add(deadhead_before)
+    session.add(rotation_b)
 
 
 def simulate(scenario_id: int, session: sqlalchemy.orm.session.Session) -> int:
