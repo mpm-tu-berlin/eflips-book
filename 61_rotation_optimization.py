@@ -332,7 +332,6 @@ def optimize_rotation(
 
     engine = create_engine(database_url)
     session = Session(engine)
-    random.seed()
     try:
         scenario = session.query(Scenario).filter(Scenario.id == scenario_id).one()
         current_value = number_of_rotations_below_zero(scenario, session)
@@ -347,8 +346,13 @@ def optimize_rotation(
         )  # The results of each step in the optimization.
 
         while current_value > 0:
+            # We need to seed our RNG each time???
+            random.seed(os.urandom(32))
             # Choose a random action to take.
-            if random.random() < random_bias:
+            random_value = random.random()
+            # Write the random value and the bias to a debug log.
+            logger.debug(f"Random value: {random_value}, random bias: {random_bias} (PID: {os.getpid()})")
+            if random_value < random_bias:
                 # Add a charging station.
                 logger.debug(f"Adding a charging station to scenario {scenario_id}.")
                 station_that_had_charger_added = add_charging_station(scenario, session)
@@ -574,7 +578,5 @@ if __name__ == "__main__":
     print("Done. Creating plots.")
 
     dataframes = [pd.DataFrame(result) for result in all_results]
-    for df in dataframes:
-        print(df.shape)
     pareto_plot(dataframes)
     plot_traces(dataframes)
