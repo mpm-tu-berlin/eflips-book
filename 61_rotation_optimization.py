@@ -14,7 +14,7 @@ import uuid
 import warnings
 from collections import Counter
 from datetime import timedelta
-from random import random
+import random
 from typing import List, Tuple, Dict
 from urllib.parse import urlparse
 
@@ -323,6 +323,8 @@ def optimize_rotation(
     """
     logger = logging.getLogger(__name__)
 
+    assert 0 <= random_bias <= 1
+
     # Run the simulation once to get the initial state.
     ds_wrapper = DjangoSimbaWrapper(database_url)
     ds_wrapper.run_simba_scenario(scenario_id, assign_vehicles=True)
@@ -330,6 +332,7 @@ def optimize_rotation(
 
     engine = create_engine(database_url)
     session = Session(engine)
+    random.seed()
     try:
         scenario = session.query(Scenario).filter(Scenario.id == scenario_id).one()
         current_value = number_of_rotations_below_zero(scenario, session)
@@ -345,7 +348,7 @@ def optimize_rotation(
 
         while current_value > 0:
             # Choose a random action to take.
-            if random() < random_bias:
+            if random.random() < random_bias:
                 # Add a charging station.
                 logger.debug(f"Adding a charging station to scenario {scenario_id}.")
                 station_that_had_charger_added = add_charging_station(scenario, session)
@@ -571,5 +574,7 @@ if __name__ == "__main__":
     print("Done. Creating plots.")
 
     dataframes = [pd.DataFrame(result) for result in all_results]
+    for df in dataframes:
+        print(df.shape)
     pareto_plot(dataframes)
     plot_traces(dataframes)
