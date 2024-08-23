@@ -351,7 +351,9 @@ def optimize_rotation(
             # Choose a random action to take.
             random_value = random.random()
             # Write the random value and the bias to a debug log.
-            logger.debug(f"Random value: {random_value}, random bias: {random_bias} (PID: {os.getpid()})")
+            logger.debug(
+                f"Random value: {random_value}, random bias: {random_bias} (PID: {os.getpid()})"
+            )
             if random_value < random_bias:
                 # Add a charging station.
                 logger.debug(f"Adding a charging station to scenario {scenario_id}.")

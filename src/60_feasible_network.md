@@ -42,3 +42,4 @@ The code for this section is  available [here](https://github.com/mpm-tu-berlin/
 ---
 
 The algorithm used to find the different scenarios is a directed random walk, where each time the scenario is still not completely feasible, either a terminus station is electrified or a rotation is split. Going multiple times, with a different probability of electrifying a terminus or splitting a rotation in each step allows a mapping of the pareto frontier. This is not paritcularly elegant way to go about this problem (genetic algorithms would be better), but it works.
+
